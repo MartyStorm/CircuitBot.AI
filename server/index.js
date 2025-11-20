@@ -8,8 +8,7 @@ import path from "path";
 import fetch from "node-fetch";
 import { fileURLToPath } from 'url';
 
-// Load environment variables - try .env.production first, then .env
-dotenv.config({ path: '.env.production' });
+// Load environment variables from .env (development only)
 dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
