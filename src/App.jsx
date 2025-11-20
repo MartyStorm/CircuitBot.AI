@@ -3268,24 +3268,30 @@ export default function App() {
             {attachedFiles.length > 0 && (
               <div style={{
                 display: "flex",
-                flexDirection: "column",
+                alignItems: "center",
                 gap: 8,
-                marginTop: 8,
-                flexWrap: "wrap",
+                padding: "8px 12px",
+                background: THEME.inputBg,
+                border: `1px solid ${THEME.accent}`,
+                borderRadius: 6,
+                height: "46px",
+                overflow: "auto",
+                flexWrap: "nowrap",
               }}>
                 {attachedFiles.map((file, index) => (
                   <div key={index} style={{
                     display: "flex",
                     alignItems: "center",
-                    gap: 8,
-                    padding: "8px 12px",
-                    background: THEME.inputBg,
-                    border: `1px solid ${THEME.accent}`,
-                    borderRadius: 6,
-                    fontSize: 12,
+                    gap: 6,
+                    padding: "4px 8px",
+                    background: THEME.bg,
+                    border: `1px solid ${THEME.border}`,
+                    borderRadius: 4,
+                    fontSize: 11,
                     color: THEME.text,
+                    whiteSpace: "nowrap",
                   }}>
-                    <span>📎 {file.name}</span>
+                    <span>📎 {file.name.substring(0, 20)}{file.name.length > 20 ? '...' : ''}</span>
                     <button
                       onClick={() => removeAttachedFile(index)}
                       style={{
