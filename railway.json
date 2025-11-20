@@ -4,6 +4,6 @@
     "builder": "nixpacks"
   },
   "deploy": {
-    "startCommand": "npm run build && node server/index.js"
+    "startCommand": "npm run build && npm install --prefix server && node server/index.js"
   }
 }
