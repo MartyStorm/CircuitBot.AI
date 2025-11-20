@@ -3264,44 +3264,45 @@ export default function App() {
               rows={1}
             />
 
-            {/* Attached Files Display */}
+            {/* Attached Files Display - inline with buttons */}
             {attachedFiles.length > 0 && (
               <div style={{
                 display: "flex",
                 alignItems: "center",
-                gap: 8,
-                padding: "8px 12px",
+                gap: 6,
+                padding: "4px 8px",
                 background: THEME.inputBg,
                 border: `1px solid ${THEME.accent}`,
                 borderRadius: 6,
                 height: "46px",
                 overflow: "auto",
                 flexWrap: "nowrap",
+                flexShrink: 0,
               }}>
                 {attachedFiles.map((file, index) => (
                   <div key={index} style={{
                     display: "flex",
                     alignItems: "center",
-                    gap: 6,
-                    padding: "4px 8px",
+                    gap: 4,
+                    padding: "2px 6px",
                     background: THEME.bg,
                     border: `1px solid ${THEME.border}`,
                     borderRadius: 4,
-                    fontSize: 11,
+                    fontSize: 10,
                     color: THEME.text,
                     whiteSpace: "nowrap",
                   }}>
-                    <span>📎 {file.name.substring(0, 20)}{file.name.length > 20 ? '...' : ''}</span>
+                    <span>📎 {file.name.substring(0, 15)}{file.name.length > 15 ? '...' : ''}</span>
                     <button
                       onClick={() => removeAttachedFile(index)}
                       style={{
-                        marginLeft: "auto",
                         background: "none",
                         border: "none",
                         color: THEME.accent,
                         cursor: "pointer",
-                        padding: "4px 8px",
-                        fontSize: 14,
+                        padding: "0 4px",
+                        fontSize: 12,
+                        lineHeight: "1",
                       }}
                     >
                       ✕
