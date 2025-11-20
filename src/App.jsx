@@ -70,6 +70,8 @@ export default function App() {
   const [theme, setTheme] = useState("dark");
   const [showThemePicker, setShowThemePicker] = useState(false);
   const [showNewConversationModal, setShowNewConversationModal] = useState(false);
+  const [attachedFiles, setAttachedFiles] = useState([]);
+  const fileInputRef = useRef(null);
   const [showPrototypeModal, setShowPrototypeModal] = useState(() => {
     try {
       // Only show prototype modal for free users on first visit
@@ -618,8 +620,31 @@ export default function App() {
     };
   }, [screenSharing]);
 
+  // File handling
+  const handleFileSelect = (files) => {
+    Array.from(files).forEach(file => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setAttachedFiles(prev => [...prev, {
+          name: file.name,
+          content: e.target.result,
+          type: file.type,
+        }]);
+      };
+      reader.readAsText(file);
+    });
+  };
+
+  const handleAttachClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const removeAttachedFile = (index) => {
+    setAttachedFiles(prev => prev.filter((_, i) => i !== index));
+  };
+
   const sendMessage = async () => {
-    if (!input.trim()) return;
+    if (!input.trim() && attachedFiles.length === 0) return;
 
     // If no chat exists, create one first
     if (currentChatId === null) {
@@ -3122,6 +3147,7 @@ export default function App() {
                 Share Screen
               </button>
               <button
+                onClick={handleAttachClick}
                 style={{
                   height: "46px",
                   padding: "0 14px",
@@ -3157,6 +3183,13 @@ export default function App() {
                 </svg>
                 Attach File
               </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                multiple
+                style={{ display: "none" }}
+                onChange={(e) => handleFileSelect(e.target.files)}
+              />
             </div>
 
             {/* Message input */}
@@ -3171,6 +3204,23 @@ export default function App() {
                 if (e.key === "Enter" && !e.shiftKey) {
                   e.preventDefault();
                   sendMessage();
+                }
+              }}
+              onDragOver={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                e.currentTarget.style.backgroundColor = THEME.inputBg + "40";
+              }}
+              onDragLeave={(e) => {
+                e.preventDefault();
+                e.currentTarget.style.backgroundColor = THEME.inputBg;
+              }}
+              onDrop={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                e.currentTarget.style.backgroundColor = THEME.inputBg;
+                if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                  handleFileSelect(e.dataTransfer.files);
                 }
               }}
               placeholder="Type a message..."
@@ -3196,13 +3246,54 @@ export default function App() {
               rows={1}
             />
 
+            {/* Attached Files Display */}
+            {attachedFiles.length > 0 && (
+              <div style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: 8,
+                marginTop: 8,
+                flexWrap: "wrap",
+              }}>
+                {attachedFiles.map((file, index) => (
+                  <div key={index} style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    padding: "8px 12px",
+                    background: THEME.inputBg,
+                    border: `1px solid ${THEME.accent}`,
+                    borderRadius: 6,
+                    fontSize: 12,
+                    color: THEME.text,
+                  }}>
+                    <span>📎 {file.name}</span>
+                    <button
+                      onClick={() => removeAttachedFile(index)}
+                      style={{
+                        marginLeft: "auto",
+                        background: "none",
+                        border: "none",
+                        color: THEME.accent,
+                        cursor: "pointer",
+                        padding: "4px 8px",
+                        fontSize: 14,
+                      }}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
             {/* Send Button */}
             <button
               onClick={sendMessage}
               style={{
                 height: "46px",
                 padding: "0 16px",
-                background: input.trim() ? `linear-gradient(180deg, ${THEME.accentLight} 0%, ${THEME.accentDark} 100%)` : "#303540",
+                background: (input.trim() || attachedFiles.length > 0) ? `linear-gradient(180deg, ${THEME.accentLight} 0%, ${THEME.accentDark} 100%)` : "#303540",
                 color: THEME.buttonText,
                 border: `1px solid ${THEME.accent}`,
                 borderRadius: 6,
