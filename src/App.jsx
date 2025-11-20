@@ -2708,7 +2708,25 @@ export default function App() {
         overflow: "hidden",
       }}>
         {/* Messages area */}
-        <div style={{
+        <div 
+          onDragOver={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            e.currentTarget.style.backgroundColor = THEME.bg + "60";
+          }}
+          onDragLeave={(e) => {
+            e.preventDefault();
+            e.currentTarget.style.backgroundColor = "transparent";
+          }}
+          onDrop={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            e.currentTarget.style.backgroundColor = "transparent";
+            if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+              handleFileSelect(e.dataTransfer.files);
+            }
+          }}
+          style={{
           flex: 1,
           overflowY: "auto",
           padding: "20px",
