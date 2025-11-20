@@ -587,7 +587,7 @@ app.get('*', (req, res) => {
   }
 });
 
-const PORT = process.env.PORT || 8787;
-app.listen(PORT, () => {
-  console.log(`Server listening on http://localhost:${PORT}`);
+const PORT = process.env.PORT || 8080;
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Server listening on http://0.0.0.0:${PORT}`);
 });
