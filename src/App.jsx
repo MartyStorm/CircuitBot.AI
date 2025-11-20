@@ -3112,9 +3112,15 @@ export default function App() {
           {/* Message input row with share/attach to the left of textarea */}
           <div style={{
             display: "flex",
-            gap: 12,
-            alignItems: "stretch",
+            flexDirection: "column",
+            gap: 8,
           }}>
+            {/* Input controls row */}
+            <div style={{
+              display: "flex",
+              gap: 12,
+              alignItems: "stretch",
+            }}>
             {/* Share Screen and Attach File buttons side by side */}
             <div style={{ display: "flex", gap: 8, alignItems: "flex-start", height: "100%" }}>
               <button
@@ -3264,54 +3270,6 @@ export default function App() {
               rows={1}
             />
 
-            {/* Attached Files Display - inline with buttons */}
-            {attachedFiles.length > 0 && (
-              <div style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 6,
-                padding: "4px 8px",
-                background: THEME.inputBg,
-                border: `1px solid ${THEME.accent}`,
-                borderRadius: 6,
-                height: "46px",
-                overflow: "auto",
-                flexWrap: "nowrap",
-                flexShrink: 0,
-              }}>
-                {attachedFiles.map((file, index) => (
-                  <div key={index} style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 4,
-                    padding: "2px 6px",
-                    background: THEME.bg,
-                    border: `1px solid ${THEME.border}`,
-                    borderRadius: 4,
-                    fontSize: 10,
-                    color: THEME.text,
-                    whiteSpace: "nowrap",
-                  }}>
-                    <span>📎 {file.name.substring(0, 15)}{file.name.length > 15 ? '...' : ''}</span>
-                    <button
-                      onClick={() => removeAttachedFile(index)}
-                      style={{
-                        background: "none",
-                        border: "none",
-                        color: THEME.accent,
-                        cursor: "pointer",
-                        padding: "0 4px",
-                        fontSize: 12,
-                        lineHeight: "1",
-                      }}
-                    >
-                      ✕
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-
             {/* Send Button */}
             <button
               onClick={sendMessage}
@@ -3330,7 +3288,7 @@ export default function App() {
                 alignItems: "center",
               }}
               onMouseEnter={e => {
-                if (input.trim()) {
+                if (input.trim() || attachedFiles.length > 0) {
                   e.currentTarget.style.boxShadow = `0 4px 12px ${THEME.accent}60`;
                   e.currentTarget.style.transform = "translateY(-2px)";
                 }
@@ -3341,6 +3299,47 @@ export default function App() {
               }}>
               Send
             </button>
+            </div>
+
+            {/* Attached Files Display - below the input row */}
+            {attachedFiles.length > 0 && (
+              <div style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: 6,
+                padding: "0 0",
+              }}>
+                {attachedFiles.map((file, index) => (
+                  <div key={index} style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    padding: "8px 12px",
+                    background: THEME.inputBg,
+                    border: `1px solid ${THEME.accent}`,
+                    borderRadius: 6,
+                    fontSize: 12,
+                    color: THEME.text,
+                  }}>
+                    <span>📎 {file.name}</span>
+                    <button
+                      onClick={() => removeAttachedFile(index)}
+                      style={{
+                        marginLeft: "auto",
+                        background: "none",
+                        border: "none",
+                        color: THEME.accent,
+                        cursor: "pointer",
+                        padding: "4px 8px",
+                        fontSize: 14,
+                      }}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
 
             {/* Voice Controls Group */}
             <div style={{ display: "flex", gap: 8 }}>
@@ -3652,9 +3651,9 @@ export default function App() {
                 Stop
               </button>
             </div>
-          </div>
 
           {/* Additional controls can be added here if needed */}
+          </div>
         </div>
       </div>
     </div>
