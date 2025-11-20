@@ -2846,7 +2846,7 @@ export default function App() {
                               border: `1.5px solid ${THEME.border}`,
                               borderRadius: 4,
                               cursor: "pointer",
-                              padding: "5px 8px",
+                              padding: "5px 10px",
                               color: THEME.text,
                               fontSize: 12,
                               fontWeight: 600,
@@ -2875,6 +2875,7 @@ export default function App() {
                               <path d="M3.51 9a9 9 0 0 1 14.13-3.36L23 10"></path>
                               <path d="M20.49 15a9 9 0 0 1-14.13 3.36L1 14"></path>
                             </svg>
+                            Refresh
                           </button>
                           <button
                             onClick={() => handleFeedback(idx, "up")}
@@ -3108,18 +3109,12 @@ export default function App() {
             </div>
           )}
 
-            {/* Message input row with share/attach to the left of textarea */}
-            <div style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: 8,
-            }}>
-            {/* First row: Share Screen and Attach File buttons on the left, Textarea in center */}
-            <div style={{
-              display: "flex",
-              gap: 12,
-              alignItems: "stretch",
-            }}>
+          {/* Message input row with share/attach to the left of textarea */}
+          <div style={{
+            display: "flex",
+            gap: 12,
+            alignItems: "stretch",
+          }}>
             {/* Share Screen and Attach File buttons side by side */}
             <div style={{ display: "flex", gap: 8, alignItems: "flex-start", height: "100%" }}>
               <button
@@ -3269,374 +3264,34 @@ export default function App() {
               rows={1}
             />
 
-            {/* Textarea row - contains textarea with share/attach on left */}
-            </div>
-
-            {/* Second row: Voice controls and Send button */}
-            <div style={{
-              display: "flex",
-              gap: 8,
-              alignItems: "center",
-            }}>
-              {/* Voice Controls Group */}
-              <div style={{ display: "flex", gap: 8 }}>
-                {/* Always-On Mic Toggle Button */}
-                <button 
-                  onClick={async () => {
-                    // If turning OFF the mic and there's transcription, send it
-                    if (micOpen) {
-                      // Stop recognition immediately to capture any final text
-                      if (recognitionRef.current) {
-                        recognitionRef.current.stop();
-                      }
-                      
-                      // Wait a moment for speech recognition to finalize
-                      await new Promise(resolve => setTimeout(resolve, 100));
-                      
-                      // Get final transcription - combine accumulated + current state
-                      let finalTranscription = accumulatedTranscriptRef.current.trim();
-                      if (!finalTranscription && transcription.trim()) {
-                        finalTranscription = transcription.trim();
-                      } else if (finalTranscription && transcription.trim() && !transcription.includes(finalTranscription)) {
-                        finalTranscription = finalTranscription + " " + transcription.trim();
-                      }
-                      
-                      accumulatedTranscriptRef.current = ""; // Clear for next use
-                      
-                      if (finalTranscription) {
-                        // Create user message from the transcription
-                        const userMessage = { role: "user", content: finalTranscription };
-                        const newMessages = [...messages, userMessage];
-                        setMessages(newMessages);
-                        setTranscription("");
-                        setLoading(true);
-                        
-                        // Send to AI
-                        const modelToUse = useAutoModel ? selectBestModel(finalTranscription) : selectedModel;
-                        const startTime = Date.now();
-                        
-                        try {
-                          const response = await fetch(`${API_BASE}/chat`, {
-                            method: "POST",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({
-                              messages: newMessages,
-                              model: modelToUse,
-                              profileGuide: activeProfile?.guide || "",
-                              userId,
-                              userContext: { name: null, projects: [], interests: [] },
-                              deepResearch,
-                              currentDateTime: new Date().toISOString(),
-                            }),
-                          });
-                          
-                          const endTime = Date.now();
-                          const responseTime = ((endTime - startTime) / 1000).toFixed(2);
-                          
-                          if (response.ok) {
-                            const data = await response.json();
-                            const text = data.reply || "";
-                            const sources = extractSources(text);
-                            const assistantMessage = {
-                              role: "assistant",
-                              content: text,
-                              responseTime: responseTime,
-                              model: data.model || modelToUse,
-                              feedback: null,
-                              sources: sources.length ? sources : null,
-                            };
-                            const updatedMessages = [...newMessages, assistantMessage];
-                            setMessages(updatedMessages);
-                            setChats(prev => prev.map(chat => chat.id === currentChatId ? { ...chat, messages: updatedMessages } : chat));
-                          }
-                        } catch (error) {
-                          console.error("Error sending Always-On Mic message:", error);
-                        } finally {
-                          setLoading(false);
-                        }
-                      }
-                      
-                      // Toggle the mic state
-                      setMicOpen(!micOpen);
-                    } else {
-                      // If mic is already off, just toggle it on
-                      setMicOpen(!micOpen);
-                    }
-                  }}
-                    style={{
-                      height: "46px",
-                      padding: "0 16px",
-                      background: !micOpen ? `linear-gradient(180deg, ${THEME.accentLight} 0%, ${THEME.accentDark} 100%)` : "#ff4444",
-                      border: "none",
-                      color: "white",
-                      borderRadius: 6,
-                      cursor: "pointer",
-                      fontSize: 13,
-                      fontWeight: 600,
-                      transition: "all 0.2s",
-                      minWidth: 120,
-                      display: "flex",
-                      alignItems: "center",
-                    }}
-                  onMouseEnter={e => {
-                    e.target.style.boxShadow = `0 4px 12px ${THEME.accent}60`;
-                    e.target.style.transform = "translateY(-2px)";
-                  }}
-                  onMouseLeave={e => {
-                    e.target.style.boxShadow = "none";
-                    e.target.style.transform = "translateY(0)";
-                  }}
-                  title={micOpen ? "Click to disable always-on microphone" : "Click to enable always-on microphone"}
-                >
-                  {!micOpen ? (
-                    <>
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: 6, display: 'inline-block', verticalAlign: 'middle' }}>
-                        <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
-                        <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
-                        <line x1="12" x2="12" y1="19" y2="22"/>
-                      </svg>
-                      Enable Always-On Mic
-                    </>
-                  ) : (
-                    <>
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: 6, display: 'inline-block', verticalAlign: 'middle' }}>
-                        <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
-                        <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
-                        <line x1="12" x2="12" y1="19" y2="22"/>
-                      </svg>
-                      Listening
-                    </>
-                  )}
-                </button>
-
-                {/* Hold to Talk */}
-                <button
-                  onMouseDown={() => {
-                    setIsListening(true);
-                    setTranscription("");
-                    console.log("[voice] listening...");
-                  }}
-                  onMouseUp={async () => {
-                    setIsListening(false);
-                    // Stop recognition immediately
-                    if (recognitionRef.current) {
-                      recognitionRef.current.stop();
-                    }
-                    console.log("[voice] auto-send");
-                    // Wait a moment for final transcription to be captured
-                    setTimeout(() => {
-                      // Get accumulated transcript, or fall back to current transcription state
-                      let finalTranscription = accumulatedTranscriptRef.current.trim();
-                      if (!finalTranscription) {
-                        finalTranscription = transcription.trim();
-                      }
-                      accumulatedTranscriptRef.current = ""; // Clear for next use
-                      
-                      if (finalTranscription) {
-                        // Create a user message from the transcription
-                        const userMessage = { role: "user", content: finalTranscription };
-                        const newMessages = [...messages, userMessage];
-                        setMessages(newMessages);
-                        setTranscription("");
-                        setLoading(true);
-
-                        // Send to AI
-                        const modelToUse = useAutoModel ? selectBestModel(finalTranscription) : selectedModel;
-                        const startTime = Date.now();
-
-                        const currentDateTime = new Date().toISOString();
-                        const messagePayload = {
-                          messages: newMessages,
-                          model: modelToUse,
-                          profileGuide: activeProfile?.guide || "",
-                          userId,
-                          userContext: { name: null, projects: [], interests: [] },
-                          deepResearch,
-                          currentDateTime,
-                          voiceEnabled: voiceType === "alloy",
-                          selectedVoice: voiceType === "alloy" ? voiceType : null,
-                          voiceSpeed,
-                        };
-                        
-                        if (screenImages.length > 0) {
-                          messagePayload.screenImages = screenImages;
-                          messagePayload.screenSharingActive = true;
-                        }
-
-                        fetch(`${API_BASE}/chat`, {
-                          method: "POST",
-                          headers: { "Content-Type": "application/json" },
-                          body: JSON.stringify(messagePayload),
-                        }).then(async response => {
-                          const endTime = Date.now();
-                          const responseTime = ((endTime - startTime) / 1000).toFixed(2);
-
-                          if (response.ok) {
-                            const data = await response.json();
-                            const text = data.reply || "";
-                            const audioUrl = data.audioUrl || null;
-                            const sources = extractSources(text);
-                            const assistantMessage = { 
-                              role: "assistant", 
-                              content: text,
-                              responseTime: responseTime,
-                              model: data.model || modelToUse,
-                              feedback: null,
-                              sources: sources.length ? sources : null,
-                            };
-                            const updatedMessages = [...newMessages, assistantMessage];
-                            setMessages(updatedMessages);
-                            setChats(prev => prev.map(chat => chat.id === currentChatId ? { ...chat, messages: updatedMessages } : chat));
-                            
-                            // Play audio response if AI voice is enabled and audioUrl is provided
-                            if (voiceType === "alloy" && audioUrl) {
-                              try {
-                                const audio = new Audio(audioUrl);
-                                audio.play().catch(e => console.error("Audio playback error:", e));
-                              } catch (e) {
-                                console.error("Audio playback setup error:", e);
-                              }
-                            }
-                          }
-                          setLoading(false);
-                        }).catch(error => {
-                          console.error("Error sending message:", error);
-                          setLoading(false);
-                        });
-                      }
-                    }, 100);
-                  }}
-                  onMouseEnter={e => {
-                    if (!isListening) {
-                      e.target.style.boxShadow = `0 4px 12px ${THEME.accent}60`;
-                      e.target.style.transform = "translateY(-2px)";
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    setIsListening(false);
-                    e.currentTarget.style.boxShadow = "none";
-                    e.currentTarget.style.transform = "translateY(0)";
-                  }}
-                  style={{
-                    height: "46px",
-                    padding: "0 14px",
-                    background: isListening ? "#ff4444" : `linear-gradient(180deg, ${THEME.accentLight} 0%, ${THEME.accentDark} 100%)`,
-                    border: "none",
-                    color: "white",
-                    borderRadius: 6,
-                    cursor: "pointer",
-                    fontSize: 14,
-                    fontWeight: 600,
-                    transition: "all 0.2s",
-                    minWidth: 90,
-                    flexShrink: 0,
-                    display: "flex",
-                    alignItems: "center",
-                  }}
-                  title="Hold to record"
-                >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: 6, display: 'inline-block', verticalAlign: 'middle' }}>
-                    <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
-                    <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
-                    <line x1="12" x2="12" y1="19" y2="22"/>
-                  </svg>
-                  {isListening ? "Listening..." : "Hold to Talk"}
-                </button>
-
-                {/* Stop Button */}
-                <button
-                  onClick={() => {
-                    setIsListening(false);
-                    setStopClicked(true);
-                    setTimeout(() => setStopClicked(false), 200);
-                  }}
-                  style={{
-                    height: "46px",
-                    padding: "0 14px",
-                    background: stopClicked ? "linear-gradient(180deg, #ff6666 0%, #cc0000 100%)" : "#303540",
-                    border: `1px solid #ff4444`,
-                    color: "white",
-                    borderRadius: 6,
-                    cursor: "pointer",
-                    fontSize: 14,
-                    fontWeight: 600,
-                    transition: "all 0.2s",
-                    minWidth: 70,
-                    flexShrink: 0,
-                    display: "flex",
-                    alignItems: "center",
-                  }}
-                  onMouseEnter={e => {
-                    if (!isListening) {
-                      e.target.style.boxShadow = `0 4px 12px ${THEME.accent}60`;
-                      e.target.style.transform = "translateY(-2px)";
-                    }
-                  }}
-                  onMouseLeave={e => {
-                    e.target.style.boxShadow = "none";
-                    e.target.style.transform = "translateY(0)";
-                  }}
-                  title="Stop listening"
-                >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'inline-block', verticalAlign: 'middle' }}>
-                    <rect x="3" y="3" width="18" height="18" rx="2"/>
-                  </svg>
-                </button>
-              </div>
-
-              {/* Send Button */}
-              <button
-                onClick={sendMessage}
-                style={{
-                  height: "46px",
-                  padding: "0 16px",
-                  background: (input.trim() || attachedFiles.length > 0) ? `linear-gradient(180deg, ${THEME.accentLight} 0%, ${THEME.accentDark} 100%)` : "#303540",
-                  color: THEME.buttonText,
-                  border: `1px solid ${THEME.accent}`,
-                  borderRadius: 6,
-                  cursor: "pointer",
-                  fontWeight: "bold",
-                  transition: "all 0.2s",
-                  flexShrink: 0,
-                  display: "flex",
-                  alignItems: "center",
-                  marginLeft: "auto",
-                }}
-                onMouseEnter={e => {
-                  if (input.trim() || attachedFiles.length > 0) {
-                    e.currentTarget.style.boxShadow = `0 4px 12px ${THEME.accent}60`;
-                    e.currentTarget.style.transform = "translateY(-2px)";
-                  }
-                }}
-                onMouseLeave={e => {
-                  e.currentTarget.style.boxShadow = "none";
-                  e.currentTarget.style.transform = "translateY(0)";
-                }}>
-                Send
-              </button>
-            </div>
-
-            {/* Attached Files Display - below the input row */}
+            {/* Attached Files Display */}
             {attachedFiles.length > 0 && (
               <div style={{
                 display: "flex",
-                flexDirection: "column",
-                gap: 6,
-                padding: "0 0",
+                alignItems: "center",
+                gap: 8,
+                padding: "8px 12px",
+                background: THEME.inputBg,
+                border: `1px solid ${THEME.accent}`,
+                borderRadius: 6,
+                height: "46px",
+                overflow: "auto",
+                flexWrap: "nowrap",
               }}>
                 {attachedFiles.map((file, index) => (
                   <div key={index} style={{
                     display: "flex",
                     alignItems: "center",
-                    gap: 8,
-                    padding: "8px 12px",
-                    background: THEME.inputBg,
-                    border: `1px solid ${THEME.accent}`,
-                    borderRadius: 6,
-                    fontSize: 12,
+                    gap: 6,
+                    padding: "4px 8px",
+                    background: THEME.bg,
+                    border: `1px solid ${THEME.border}`,
+                    borderRadius: 4,
+                    fontSize: 11,
                     color: THEME.text,
+                    whiteSpace: "nowrap",
                   }}>
-                    <span>📎 {file.name}</span>
+                    <span>📎 {file.name.substring(0, 20)}{file.name.length > 20 ? '...' : ''}</span>
                     <button
                       onClick={() => removeAttachedFile(index)}
                       style={{
@@ -3656,8 +3311,343 @@ export default function App() {
               </div>
             )}
 
-          {/* Additional controls can be added here if needed */}
+            {/* Send Button */}
+            <button
+              onClick={sendMessage}
+              style={{
+                height: "46px",
+                padding: "0 16px",
+                background: (input.trim() || attachedFiles.length > 0) ? `linear-gradient(180deg, ${THEME.accentLight} 0%, ${THEME.accentDark} 100%)` : "#303540",
+                color: THEME.buttonText,
+                border: `1px solid ${THEME.accent}`,
+                borderRadius: 6,
+                cursor: "pointer",
+                fontWeight: "bold",
+                transition: "all 0.2s",
+                flexShrink: 0,
+                display: "flex",
+                alignItems: "center",
+              }}
+              onMouseEnter={e => {
+                if (input.trim()) {
+                  e.currentTarget.style.boxShadow = `0 4px 12px ${THEME.accent}60`;
+                  e.currentTarget.style.transform = "translateY(-2px)";
+                }
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.boxShadow = "none";
+                e.currentTarget.style.transform = "translateY(0)";
+              }}>
+              Send
+            </button>
+
+            {/* Voice Controls Group */}
+            <div style={{ display: "flex", gap: 8 }}>
+              {/* Always-On Mic Toggle Button */}
+              <button 
+                onClick={async () => {
+                  // If turning OFF the mic and there's transcription, send it
+                  if (micOpen) {
+                    // Stop recognition immediately to capture any final text
+                    if (recognitionRef.current) {
+                      recognitionRef.current.stop();
+                    }
+                    
+                    // Wait a moment for speech recognition to finalize
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                    
+                    // Get final transcription - combine accumulated + current state
+                    let finalTranscription = accumulatedTranscriptRef.current.trim();
+                    if (!finalTranscription && transcription.trim()) {
+                      finalTranscription = transcription.trim();
+                    } else if (finalTranscription && transcription.trim() && !transcription.includes(finalTranscription)) {
+                      finalTranscription = finalTranscription + " " + transcription.trim();
+                    }
+                    
+                    accumulatedTranscriptRef.current = ""; // Clear for next use
+                    
+                    if (finalTranscription) {
+                      // Create user message from the transcription
+                      const userMessage = { role: "user", content: finalTranscription };
+                      const newMessages = [...messages, userMessage];
+                      setMessages(newMessages);
+                      setTranscription("");
+                      setLoading(true);
+                      
+                      // Send to AI
+                      const modelToUse = useAutoModel ? selectBestModel(finalTranscription) : selectedModel;
+                      const startTime = Date.now();
+                      
+                      try {
+                        const response = await fetch(`${API_BASE}/chat`, {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({
+                            messages: newMessages,
+                            model: modelToUse,
+                            profileGuide: activeProfile?.guide || "",
+                            userId,
+                            userContext: { name: null, projects: [], interests: [] },
+                            deepResearch,
+                            currentDateTime: new Date().toISOString(),
+                          }),
+                        });
+                        
+                        const endTime = Date.now();
+                        const responseTime = ((endTime - startTime) / 1000).toFixed(2);
+                        
+                        if (response.ok) {
+                          const data = await response.json();
+                          const text = data.reply || "";
+                          const sources = extractSources(text);
+                          const assistantMessage = {
+                            role: "assistant",
+                            content: text,
+                            responseTime: responseTime,
+                            model: data.model || modelToUse,
+                            feedback: null,
+                            sources: sources.length ? sources : null,
+                          };
+                          const updatedMessages = [...newMessages, assistantMessage];
+                          setMessages(updatedMessages);
+                          setChats(prev => prev.map(chat => chat.id === currentChatId ? { ...chat, messages: updatedMessages } : chat));
+                        }
+                      } catch (error) {
+                        console.error("Error sending Always-On Mic message:", error);
+                      } finally {
+                        setLoading(false);
+                      }
+                    }
+                    
+                    // Toggle the mic state
+                    setMicOpen(!micOpen);
+                  } else {
+                    // If mic is already off, just toggle it on
+                    setMicOpen(!micOpen);
+                  }
+                }}
+                  style={{
+                    height: "46px",
+                    padding: "0 16px",
+                    background: !micOpen ? `linear-gradient(180deg, ${THEME.accentLight} 0%, ${THEME.accentDark} 100%)` : "#ff4444",
+                    border: "none",
+                    color: "white",
+                    borderRadius: 6,
+                    cursor: "pointer",
+                    fontSize: 13,
+                    fontWeight: 600,
+                    transition: "all 0.2s",
+                    minWidth: 120,
+                    display: "flex",
+                    alignItems: "center",
+                  }}
+                onMouseEnter={e => {
+                  e.target.style.boxShadow = `0 4px 12px ${THEME.accent}60`;
+                  e.target.style.transform = "translateY(-2px)";
+                }}
+                onMouseLeave={e => {
+                  e.target.style.boxShadow = "none";
+                  e.target.style.transform = "translateY(0)";
+                }}
+                title={micOpen ? "Click to disable always-on microphone" : "Click to enable always-on microphone"}
+              >
+                {!micOpen ? (
+                  <>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: 6, display: 'inline-block', verticalAlign: 'middle' }}>
+                      <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
+                      <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                      <line x1="12" x2="12" y1="19" y2="22"/>
+                    </svg>
+                    Enable Always-On Mic
+                  </>
+                ) : (
+                  <>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: 6, display: 'inline-block', verticalAlign: 'middle' }}>
+                      <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
+                      <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                      <line x1="12" x2="12" y1="19" y2="22"/>
+                    </svg>
+                    Listening
+                  </>
+                )}
+              </button>
+
+              {/* Hold to Talk */}
+              <button
+                onMouseDown={() => {
+                  setIsListening(true);
+                  setTranscription("");
+                  console.log("[voice] listening...");
+                }}
+                onMouseUp={async () => {
+                  setIsListening(false);
+                  // Stop recognition immediately
+                  if (recognitionRef.current) {
+                    recognitionRef.current.stop();
+                  }
+                  console.log("[voice] auto-send");
+                  // Wait a moment for final transcription to be captured
+                  setTimeout(() => {
+                    // Get accumulated transcript, or fall back to current transcription state
+                    let finalTranscription = accumulatedTranscriptRef.current.trim();
+                    if (!finalTranscription) {
+                      finalTranscription = transcription.trim();
+                    }
+                    accumulatedTranscriptRef.current = ""; // Clear for next use
+                    
+                    if (finalTranscription) {
+                      // Create a user message from the transcription
+                      const userMessage = { role: "user", content: finalTranscription };
+                      const newMessages = [...messages, userMessage];
+                      setMessages(newMessages);
+                      setTranscription("");
+                      setLoading(true);
+
+                      // Send to AI
+                      const modelToUse = useAutoModel ? selectBestModel(finalTranscription) : selectedModel;
+                      const startTime = Date.now();
+
+                      const currentDateTime = new Date().toISOString();
+                      const messagePayload = {
+                        messages: newMessages,
+                        model: modelToUse,
+                        profileGuide: activeProfile?.guide || "",
+                        userId,
+                        userContext: { name: null, projects: [], interests: [] },
+                        deepResearch,
+                        currentDateTime,
+                        voiceEnabled: voiceType === "alloy",
+                        selectedVoice: voiceType === "alloy" ? voiceType : null,
+                        voiceSpeed,
+                      };
+                      
+                      if (screenImages.length > 0) {
+                        messagePayload.screenImages = screenImages;
+                        messagePayload.screenSharingActive = true;
+                      }
+
+                      fetch(`${API_BASE}/chat`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(messagePayload),
+                      }).then(async response => {
+                        const endTime = Date.now();
+                        const responseTime = ((endTime - startTime) / 1000).toFixed(2);
+
+                        if (response.ok) {
+                          const data = await response.json();
+                          const text = data.reply || "";
+                          const audioUrl = data.audioUrl || null;
+                          const sources = extractSources(text);
+                          const assistantMessage = { 
+                            role: "assistant", 
+                            content: text,
+                            responseTime: responseTime,
+                            model: data.model || modelToUse,
+                            feedback: null,
+                            sources: sources.length ? sources : null,
+                          };
+                          const updatedMessages = [...newMessages, assistantMessage];
+                          setMessages(updatedMessages);
+                          setChats(prev => prev.map(chat => chat.id === currentChatId ? { ...chat, messages: updatedMessages } : chat));
+                          
+                          // Play audio response if AI voice is enabled and audioUrl is provided
+                          if (voiceType === "alloy" && audioUrl) {
+                            try {
+                              const audio = new Audio(audioUrl);
+                              audio.play().catch(e => console.error("Audio playback error:", e));
+                            } catch (e) {
+                              console.error("Audio playback setup error:", e);
+                            }
+                          }
+                        }
+                        setLoading(false);
+                      }).catch(error => {
+                        console.error("Error sending message:", error);
+                        setLoading(false);
+                      });
+                    }
+                  }, 100);
+                }}
+                onMouseEnter={e => {
+                  if (!isListening) {
+                    e.target.style.boxShadow = `0 4px 12px ${THEME.accent}60`;
+                    e.target.style.transform = "translateY(-2px)";
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  setIsListening(false);
+                  e.currentTarget.style.boxShadow = "none";
+                  e.currentTarget.style.transform = "translateY(0)";
+                }}
+                style={{
+                  height: "46px",
+                  padding: "0 14px",
+                  background: isListening ? "#ff4444" : `linear-gradient(180deg, ${THEME.accentLight} 0%, ${THEME.accentDark} 100%)`,
+                  border: "none",
+                  color: "white",
+                  borderRadius: 6,
+                  cursor: "pointer",
+                  fontSize: 14,
+                  fontWeight: 600,
+                  transition: "all 0.2s",
+                  minWidth: 90,
+                  flexShrink: 0,
+                  display: "flex",
+                  alignItems: "center",
+                }}
+                title="Hold to record"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: 6, display: 'inline-block', verticalAlign: 'middle' }}>
+                  <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
+                  <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                  <line x1="12" x2="12" y1="19" y2="22"/>
+                </svg>
+                {isListening ? "Listening..." : "Hold to Talk"}
+              </button>
+
+              {/* Stop Button */}
+              <button
+                onClick={() => {
+                  setIsListening(false);
+                  setStopClicked(true);
+                  setTimeout(() => setStopClicked(false), 200);
+                }}
+                style={{
+                  height: "46px",
+                  padding: "0 14px",
+                  background: stopClicked ? "linear-gradient(180deg, #ff6666 0%, #cc0000 100%)" : "#303540",
+                  border: `1px solid #ff4444`,
+                  color: "white",
+                  borderRadius: 6,
+                  cursor: "pointer",
+                  fontSize: 14,
+                  fontWeight: 600,
+                  transition: "all 0.2s",
+                  minWidth: 70,
+                  flexShrink: 0,
+                  display: "flex",
+                  alignItems: "center",
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.boxShadow = "0 4px 12px #ff444460";
+                  e.currentTarget.style.transform = "translateY(-2px)";
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.boxShadow = "none";
+                  e.currentTarget.style.transform = "translateY(0)";
+                }}
+                title="Stop recording"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style={{ marginRight: 6, display: 'inline-block', verticalAlign: 'middle' }}>
+                  <rect x="6" y="6" width="12" height="12" rx="2"/>
+                </svg>
+                Stop
+              </button>
+            </div>
           </div>
+
+          {/* Additional controls can be added here if needed */}
         </div>
       </div>
     </div>
