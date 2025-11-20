@@ -2846,7 +2846,7 @@ export default function App() {
                               border: `1.5px solid ${THEME.border}`,
                               borderRadius: 4,
                               cursor: "pointer",
-                              padding: "5px 10px",
+                              padding: "5px 8px",
                               color: THEME.text,
                               fontSize: 12,
                               fontWeight: 600,
@@ -2875,7 +2875,6 @@ export default function App() {
                               <path d="M3.51 9a9 9 0 0 1 14.13-3.36L23 10"></path>
                               <path d="M20.49 15a9 9 0 0 1-14.13 3.36L1 14"></path>
                             </svg>
-                            Refresh
                           </button>
                           <button
                             onClick={() => handleFeedback(idx, "up")}
