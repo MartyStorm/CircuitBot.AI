@@ -50,19 +50,25 @@ const LOGS_DIR = path.join(process.cwd(), "uploads", "logs");
 if (!fs.existsSync(LOGS_DIR)) fs.mkdirSync(LOGS_DIR, { recursive: true });
 
 app.use((req, res, next) => {
-  // Log basic request info
-  const logEntry = {
-    timestamp: new Date().toISOString(),
-    method: req.method,
-    path: req.path,
-    ip: req.headers['x-forwarded-for'] || req.socket.remoteAddress,
-    userAgent: req.headers['user-agent'] || 'unknown',
-  };
-  
-  // Log to daily file
-  const dateStr = new Date().toISOString().split('T')[0];
-  const logFile = path.join(LOGS_DIR, `visits-${dateStr}.log`);
-  fs.appendFileSync(logFile, JSON.stringify(logEntry) + '\n', 'utf8');
+  // Log basic request info asynchronously to avoid blocking
+  setImmediate(() => {
+    try {
+      const logEntry = {
+        timestamp: new Date().toISOString(),
+        method: req.method,
+        path: req.path,
+        ip: req.headers['x-forwarded-for'] || req.socket.remoteAddress,
+        userAgent: req.headers['user-agent'] || 'unknown',
+      };
+      
+      // Log to daily file
+      const dateStr = new Date().toISOString().split('T')[0];
+      const logFile = path.join(LOGS_DIR, `visits-${dateStr}.log`);
+      fs.appendFileSync(logFile, JSON.stringify(logEntry) + '\n', 'utf8');
+    } catch (err) {
+      console.error("Error logging visitor:", err.message);
+    }
+  });
   
   next();
 });
