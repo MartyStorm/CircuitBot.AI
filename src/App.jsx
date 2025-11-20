@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 
 const API_BASE = typeof window !== 'undefined' && window.location.hostname === 'localhost' 
-  ? `http://localhost:8787`
+  ? `http://localhost:8080`
   : '';
 
 // Theme definitions
