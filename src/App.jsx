@@ -2127,7 +2127,7 @@ export default function App() {
         )}
 
         {/* Theme Picker Modal */}
-        {false && showThemePicker && loaded && (
+        {showThemePicker && loaded && (
           <div
             style={{
               position: "fixed",
