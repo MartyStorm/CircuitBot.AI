@@ -1,11 +1,16 @@
 // server/index.js (clean)
 import express from "express";
 import cors from "cors";
+import dotenv from "dotenv";
 import OpenAI from "openai";
 import fs from "fs";
 import path from "path";
 import fetch from "node-fetch";
 import { fileURLToPath } from 'url';
+
+// Load environment variables - try .env.production first, then .env
+dotenv.config({ path: '.env.production' });
+dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
