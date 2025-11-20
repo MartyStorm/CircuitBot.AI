@@ -153,6 +153,11 @@ async function refreshModels() {
 refreshModels();
 setInterval(refreshModels, 10 * 60 * 1000);
 
+// Health check endpoint for Railway
+app.get("/health", (req, res) => {
+  res.status(200).json({ status: "ok", timestamp: new Date().toISOString() });
+});
+
 app.get("/models", (_req, res) => {
   res.json({ models: cachedModels, default: DEFAULT_MODEL, error: lastFetchErr || null });
 });
