@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
 
-const API_BASE = `http://localhost:8787`;
+const API_BASE = typeof window !== 'undefined' && window.location.hostname === 'localhost' 
+  ? `http://localhost:8787`
+  : '';
 
 // Theme definitions
 const THEMES = {
@@ -1791,7 +1793,7 @@ export default function App() {
                       onClick={async () => {
                         try {
                           const sampleText = "Hello! This is a sample of my voice.";
-                          const response = await fetch('http://localhost:8787/api/tts-preview', {
+                          const response = await fetch(`${API_BASE}/api/tts-preview`, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({
