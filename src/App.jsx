@@ -3119,10 +3119,11 @@ export default function App() {
             <div style={{
               display: "flex",
               gap: 12,
-              alignItems: "stretch",
+              alignItems: "center",
+              justifyContent: "space-between",
             }}>
               {/* Share Screen and Attach File buttons side by side */}
-              <div style={{ display: "flex", gap: 8, alignItems: "flex-start", height: "100%" }}>
+              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
                 <button
                   onClick={() => setScreenSharing(!screenSharing)}
                   style={{
@@ -3249,7 +3250,6 @@ export default function App() {
                 }}
                 placeholder="Type a message..."
                 style={{
-                  flex: 1,
                   padding: "12px 16px",
                   background: THEME.inputBg,
                   border: "1px solid #fff",
@@ -3265,6 +3265,7 @@ export default function App() {
                   overflowY: "hidden",
                   height: "auto",
                   boxSizing: "border-box",
+                  flex: 1,
                 }}
                 disabled={loading}
                 rows={1}
@@ -3610,8 +3611,9 @@ export default function App() {
             {attachedFiles.length > 0 && (
               <div style={{
                 display: "flex",
-                flexDirection: "column",
-                gap: 6,
+                flexDirection: "row",
+                flexWrap: "wrap",
+                gap: 8,
                 padding: "0 0",
               }}>
                 {attachedFiles.map((file, index) => (
