@@ -3112,239 +3112,198 @@ export default function App() {
           {/* Message input row with share/attach to the left of textarea */}
           <div style={{
             display: "flex",
-            gap: 12,
-            alignItems: "stretch",
+            flexDirection: "column",
+            gap: 8,
           }}>
-            {/* Share Screen and Attach File buttons side by side */}
-            <div style={{ display: "flex", gap: 8, alignItems: "flex-start", height: "100%" }}>
-              <button
-                onClick={() => setScreenSharing(!screenSharing)}
-                style={{
-                  height: "46px",
-                  padding: "0 14px",
-                  background: screenSharing ? "linear-gradient(180deg, #ff6666 0%, #cc0000 100%)" : "#303540",
-                  border: `1px solid ${screenSharing ? "#ff4444" : THEME.accent}`,
-                  color: THEME.buttonText,
-                  borderRadius: 6,
-                  cursor: "pointer",
-                  fontSize: 12,
-                  transition: "all 0.2s",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 8,
-                }}
-                onMouseEnter={e => {
-                  if (!screenSharing) {
+            {/* First row: buttons, textarea, send */}
+            <div style={{
+              display: "flex",
+              gap: 12,
+              alignItems: "stretch",
+            }}>
+              {/* Share Screen and Attach File buttons side by side */}
+              <div style={{ display: "flex", gap: 8, alignItems: "flex-start", height: "100%" }}>
+                <button
+                  onClick={() => setScreenSharing(!screenSharing)}
+                  style={{
+                    height: "46px",
+                    padding: "0 14px",
+                    background: screenSharing ? "linear-gradient(180deg, #ff6666 0%, #cc0000 100%)" : "#303540",
+                    border: `1px solid ${screenSharing ? "#ff4444" : THEME.accent}`,
+                    color: THEME.buttonText,
+                    borderRadius: 6,
+                    cursor: "pointer",
+                    fontSize: 12,
+                    transition: "all 0.2s",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                  }}
+                  onMouseEnter={e => {
+                    if (!screenSharing) {
+                      e.target.style.color = THEME.accentLight;
+                      e.target.style.boxShadow = `0 4px 12px ${THEME.accent}60`;
+                      e.target.style.transform = "translateY(-2px)";
+                      const svg = e.target.querySelector('svg');
+                      if (svg) svg.style.stroke = THEME.accentLight;
+                    } else {
+                      e.target.style.color = "white";
+                      const svg = e.target.querySelector('svg');
+                      if (svg) svg.style.stroke = "white";
+                    }
+                  }}
+                  onMouseLeave={e => {
+                    if (!screenSharing) {
+                      e.target.style.color = THEME.buttonText;
+                      e.target.style.boxShadow = "none";
+                      e.target.style.transform = "translateY(0)";
+                      const svg = e.target.querySelector('svg');
+                      if (svg) svg.style.stroke = "white";
+                    }
+                  }}
+                  title="Toggle screen sharing"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'inline-block', verticalAlign: 'middle' }}>
+                    <rect x="2" y="4" width="20" height="14" rx="3"/>
+                    <path d="M8 20h8"/>
+                    <path d="M12 16v4"/>
+                  </svg>
+                  Share Screen
+                </button>
+                <button
+                  onClick={handleAttachClick}
+                  style={{
+                    height: "46px",
+                    padding: "0 14px",
+                    background: "#303540",
+                    border: `1px solid ${THEME.accent}`,
+                    color: THEME.buttonText,
+                    borderRadius: 6,
+                    cursor: "pointer",
+                    fontSize: 12,
+                    transition: "all 0.2s",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                  }}
+                  onMouseEnter={e => {
                     e.target.style.color = THEME.accentLight;
                     e.target.style.boxShadow = `0 4px 12px ${THEME.accent}60`;
                     e.target.style.transform = "translateY(-2px)";
                     const svg = e.target.querySelector('svg');
                     if (svg) svg.style.stroke = THEME.accentLight;
-                  } else {
-                    e.target.style.color = "white";
-                    const svg = e.target.querySelector('svg');
-                    if (svg) svg.style.stroke = "white";
-                  }
-                }}
-                onMouseLeave={e => {
-                  if (!screenSharing) {
+                  }}
+                  onMouseLeave={e => {
                     e.target.style.color = THEME.buttonText;
                     e.target.style.boxShadow = "none";
                     e.target.style.transform = "translateY(0)";
                     const svg = e.target.querySelector('svg');
                     if (svg) svg.style.stroke = "white";
+                  }}
+                  title="Attach file"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'inline-block', verticalAlign: 'middle' }}>
+                    <path d="M21.44 11.05l-8.49 8.49a5 5 0 0 1-7.07-7.07l8.49-8.49a3 3 0 0 1 4.24 4.24l-8.49 8.49a1 1 0 0 1-1.41-1.41l8.49-8.49"/>
+                  </svg>
+                  Attach File
+                </button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  multiple
+                  style={{ display: "none" }}
+                  onChange={(e) => handleFileSelect(e.target.files)}
+                />
+              </div>
+
+              {/* Message input */}
+              <textarea
+                value={input}
+                onChange={e => {
+                  setInput(e.target.value);
+                  e.target.style.height = 'auto';
+                  e.target.style.height = e.target.scrollHeight + 'px';
+                }}
+                onKeyPress={e => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
                   }
                 }}
-                title="Toggle screen sharing"
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'inline-block', verticalAlign: 'middle' }}>
-                  <rect x="2" y="4" width="20" height="14" rx="3"/>
-                  <path d="M8 20h8"/>
-                  <path d="M12 16v4"/>
-                </svg>
-                Share Screen
-              </button>
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  e.currentTarget.style.backgroundColor = THEME.inputBg + "40";
+                }}
+                onDragLeave={(e) => {
+                  e.preventDefault();
+                  e.currentTarget.style.backgroundColor = THEME.inputBg;
+                }}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  e.currentTarget.style.backgroundColor = THEME.inputBg;
+                  if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                    handleFileSelect(e.dataTransfer.files);
+                  }
+                }}
+                placeholder="Type a message..."
+                style={{
+                  flex: 1,
+                  padding: "12px 16px",
+                  background: THEME.inputBg,
+                  border: "1px solid #fff",
+                  borderRadius: 8,
+                  color: "#fff",
+                  fontFamily: "inherit",
+                  fontSize: 14,
+                  outline: "none",
+                  minWidth: 0,
+                  minHeight: "36px",
+                  maxHeight: "200px",
+                  resize: "none",
+                  overflowY: "hidden",
+                  height: "auto",
+                  boxSizing: "border-box",
+                }}
+                disabled={loading}
+                rows={1}
+              />
+
+              {/* Send Button */}
               <button
-                onClick={handleAttachClick}
+                onClick={sendMessage}
                 style={{
                   height: "46px",
-                  padding: "0 14px",
-                  background: "#303540",
-                  border: `1px solid ${THEME.accent}`,
+                  padding: "0 16px",
+                  background: (input.trim() || attachedFiles.length > 0) ? `linear-gradient(180deg, ${THEME.accentLight} 0%, ${THEME.accentDark} 100%)` : "#303540",
                   color: THEME.buttonText,
+                  border: `1px solid ${THEME.accent}`,
                   borderRadius: 6,
                   cursor: "pointer",
-                  fontSize: 12,
+                  fontWeight: "bold",
                   transition: "all 0.2s",
+                  flexShrink: 0,
                   display: "flex",
                   alignItems: "center",
-                  gap: 8,
                 }}
                 onMouseEnter={e => {
-                  e.target.style.color = THEME.accentLight;
-                  e.target.style.boxShadow = `0 4px 12px ${THEME.accent}60`;
-                  e.target.style.transform = "translateY(-2px)";
-                  const svg = e.target.querySelector('svg');
-                  if (svg) svg.style.stroke = THEME.accentLight;
+                  if (input.trim()) {
+                    e.currentTarget.style.boxShadow = `0 4px 12px ${THEME.accent}60`;
+                    e.currentTarget.style.transform = "translateY(-2px)";
+                  }
                 }}
                 onMouseLeave={e => {
-                  e.target.style.color = THEME.buttonText;
-                  e.target.style.boxShadow = "none";
-                  e.target.style.transform = "translateY(0)";
-                  const svg = e.target.querySelector('svg');
-                  if (svg) svg.style.stroke = "white";
-                }}
-                title="Attach file"
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'inline-block', verticalAlign: 'middle' }}>
-                  <path d="M21.44 11.05l-8.49 8.49a5 5 0 0 1-7.07-7.07l8.49-8.49a3 3 0 0 1 4.24 4.24l-8.49 8.49a1 1 0 0 1-1.41-1.41l8.49-8.49"/>
-                </svg>
-                Attach File
+                  e.currentTarget.style.boxShadow = "none";
+                  e.currentTarget.style.transform = "translateY(0)";
+                }}>
+                Send
               </button>
-              <input
-                ref={fileInputRef}
-                type="file"
-                multiple
-                style={{ display: "none" }}
-                onChange={(e) => handleFileSelect(e.target.files)}
-              />
-            </div>
 
-            {/* Message input */}
-            <textarea
-              value={input}
-              onChange={e => {
-                setInput(e.target.value);
-                e.target.style.height = 'auto';
-                e.target.style.height = e.target.scrollHeight + 'px';
-              }}
-              onKeyPress={e => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  sendMessage();
-                }
-              }}
-              onDragOver={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                e.currentTarget.style.backgroundColor = THEME.inputBg + "40";
-              }}
-              onDragLeave={(e) => {
-                e.preventDefault();
-                e.currentTarget.style.backgroundColor = THEME.inputBg;
-              }}
-              onDrop={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                e.currentTarget.style.backgroundColor = THEME.inputBg;
-                if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-                  handleFileSelect(e.dataTransfer.files);
-                }
-              }}
-              placeholder="Type a message..."
-              style={{
-                flex: 1,
-                padding: "12px 16px",
-                background: THEME.inputBg,
-                border: "1px solid #fff",
-                borderRadius: 8,
-                color: "#fff",
-                fontFamily: "inherit",
-                fontSize: 14,
-                outline: "none",
-                minWidth: 0,
-                minHeight: "36px",
-                maxHeight: "200px",
-                resize: "none",
-                overflowY: "hidden",
-                height: "auto",
-                boxSizing: "border-box",
-              }}
-              disabled={loading}
-              rows={1}
-            />
-
-            {/* Attached Files Display */}
-            {attachedFiles.length > 0 && (
-              <div style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 8,
-                padding: "8px 12px",
-                background: THEME.inputBg,
-                border: `1px solid ${THEME.accent}`,
-                borderRadius: 6,
-                height: "46px",
-                overflow: "auto",
-                flexWrap: "nowrap",
-              }}>
-                {attachedFiles.map((file, index) => (
-                  <div key={index} style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 6,
-                    padding: "4px 8px",
-                    background: THEME.bg,
-                    border: `1px solid ${THEME.border}`,
-                    borderRadius: 4,
-                    fontSize: 11,
-                    color: THEME.text,
-                    whiteSpace: "nowrap",
-                  }}>
-                    <span>📎 {file.name.substring(0, 20)}{file.name.length > 20 ? '...' : ''}</span>
-                    <button
-                      onClick={() => removeAttachedFile(index)}
-                      style={{
-                        marginLeft: "auto",
-                        background: "none",
-                        border: "none",
-                        color: THEME.accent,
-                        cursor: "pointer",
-                        padding: "4px 8px",
-                        fontSize: 14,
-                      }}
-                    >
-                      ✕
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Send Button */}
-            <button
-              onClick={sendMessage}
-              style={{
-                height: "46px",
-                padding: "0 16px",
-                background: (input.trim() || attachedFiles.length > 0) ? `linear-gradient(180deg, ${THEME.accentLight} 0%, ${THEME.accentDark} 100%)` : "#303540",
-                color: THEME.buttonText,
-                border: `1px solid ${THEME.accent}`,
-                borderRadius: 6,
-                cursor: "pointer",
-                fontWeight: "bold",
-                transition: "all 0.2s",
-                flexShrink: 0,
-                display: "flex",
-                alignItems: "center",
-              }}
-              onMouseEnter={e => {
-                if (input.trim()) {
-                  e.currentTarget.style.boxShadow = `0 4px 12px ${THEME.accent}60`;
-                  e.currentTarget.style.transform = "translateY(-2px)";
-                }
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.boxShadow = "none";
-                e.currentTarget.style.transform = "translateY(0)";
-              }}>
-              Send
-            </button>
-
-            {/* Voice Controls Group */}
-            <div style={{ display: "flex", gap: 8 }}>
-              {/* Always-On Mic Toggle Button */}
-              <button 
+              {/* Voice Controls Group */}
+              <div style={{ display: "flex", gap: 8 }}>
+                {/* Always-On Mic Toggle Button */}
+                <button 
                 onClick={async () => {
                   // If turning OFF the mic and there's transcription, send it
                   if (micOpen) {
@@ -3645,6 +3604,47 @@ export default function App() {
                 Stop
               </button>
             </div>
+            </div>
+
+            {/* Second row: Attached Files Display */}
+            {attachedFiles.length > 0 && (
+              <div style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: 6,
+                padding: "0 0",
+              }}>
+                {attachedFiles.map((file, index) => (
+                  <div key={index} style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    padding: "8px 12px",
+                    background: THEME.inputBg,
+                    border: `1px solid ${THEME.accent}`,
+                    borderRadius: 6,
+                    fontSize: 12,
+                    color: THEME.text,
+                  }}>
+                    <span>📎 {file.name}</span>
+                    <button
+                      onClick={() => removeAttachedFile(index)}
+                      style={{
+                        marginLeft: "auto",
+                        background: "none",
+                        border: "none",
+                        color: THEME.accent,
+                        cursor: "pointer",
+                        padding: "4px 8px",
+                        fontSize: 14,
+                      }}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Additional controls can be added here if needed */}
