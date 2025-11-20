@@ -3268,9 +3268,11 @@ export default function App() {
               disabled={loading}
               rows={1}
             />
+
+            {/* Textarea row - contains textarea with share/attach on left */}
             </div>
 
-            {/* Second row: Voice controls on the left, Send button on the right */}
+            {/* Second row: Voice controls and Send button */}
             <div style={{
               display: "flex",
               gap: 8,
@@ -3547,6 +3549,22 @@ export default function App() {
                     setIsListening(false);
                     setStopClicked(true);
                     setTimeout(() => setStopClicked(false), 200);
+                  }}
+                  style={{
+                    height: "46px",
+                    padding: "0 14px",
+                    background: stopClicked ? "linear-gradient(180deg, #ff6666 0%, #cc0000 100%)" : "#303540",
+                    border: `1px solid #ff4444`,
+                    color: "white",
+                    borderRadius: 6,
+                    cursor: "pointer",
+                    fontSize: 14,
+                    fontWeight: 600,
+                    transition: "all 0.2s",
+                    minWidth: 70,
+                    flexShrink: 0,
+                    display: "flex",
+                    alignItems: "center",
                   }}
                   onMouseEnter={e => {
                     if (!isListening) {
