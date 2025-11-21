@@ -3120,15 +3120,16 @@ export default function App() {
               display: "flex",
               gap: 12,
               alignItems: "center",
-              justifyContent: "space-between",
+              justifyContent: "space-around",
             }}>
               {/* Share Screen and Attach File buttons side by side */}
-              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+              <div style={{ display: "flex", gap: 8, alignItems: "center", flex: 1, justifyContent: "flex-start" }}>
                 <button
                   onClick={() => setScreenSharing(!screenSharing)}
                   style={{
                     height: "46px",
                     padding: "0 14px",
+                    minWidth: "120px",
                     background: screenSharing ? "linear-gradient(180deg, #ff6666 0%, #cc0000 100%)" : "#303540",
                     border: `1px solid ${screenSharing ? "#ff4444" : THEME.accent}`,
                     color: THEME.buttonText,
@@ -3176,6 +3177,7 @@ export default function App() {
                   style={{
                     height: "46px",
                     padding: "0 14px",
+                    minWidth: "120px",
                     background: "#303540",
                     border: `1px solid ${THEME.accent}`,
                     color: THEME.buttonText,
@@ -3265,7 +3267,7 @@ export default function App() {
                   overflowY: "hidden",
                   height: "auto",
                   boxSizing: "border-box",
-                  flex: 1,
+                  flex: "1 1 auto",
                 }}
                 disabled={loading}
                 rows={1}
@@ -3284,9 +3286,10 @@ export default function App() {
                   cursor: "pointer",
                   fontWeight: "bold",
                   transition: "all 0.2s",
-                  flexShrink: 0,
                   display: "flex",
                   alignItems: "center",
+                  flex: 1,
+                  justifyContent: "center",
                 }}
                 onMouseEnter={e => {
                   if (input.trim()) {
@@ -3302,7 +3305,7 @@ export default function App() {
               </button>
 
               {/* Voice Controls Group */}
-              <div style={{ display: "flex", gap: 8 }}>
+              <div style={{ display: "flex", gap: 8, flex: 1, justifyContent: "flex-end" }}>
                 {/* Always-On Mic Toggle Button */}
                 <button 
                 onClick={async () => {
